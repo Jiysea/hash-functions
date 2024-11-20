@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Hash Functions</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap"
+			rel="stylesheet"
+		/>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<style>
+			.poppins-regular {
+				font-family: "Poppins", sans-serif;
+				font-weight: 400;
+				font-style: normal;
+			}
+		</style>
+	</head>
+
+	<body
+		class="flex flex-col items-center justify-center gap-4 min-h-screen bg-[#212121] poppins-regular p-4"
+	>
+		<!-- Whole Block -->
+		<div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg max-w-lg w-full">
+			<h1 class="text-2xl font-medium text-zinc-50 text-center">
+				Hash Functions
+			</h1>
+			<h2 class="text-base font-medium text-zinc-500 text-center">
+				Hexadecimal Method
+			</h2>
+		</div>
+
+		<!-- Encryption Block -->
+		<div class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg max-w-lg w-full">
+			<span class="flex flex-col gap-4 mb-4">
+				<div class="flex items-center gap-4 w-full text-zinc-50">
+					<span class="flex flex-col w-full">
+						<label for="inputText" class="text-sm font-medium mb-1">
+							Message
+						</label>
+
+						<span class="flex items-center justify-center gap-2.5">
+							<input
+								type="text"
+								id="inputText"
+								placeholder="Type message"
+								autocomplete="off"
+								autocapitalize="on"
+								class="text-sm rounded-md w-full p-2 outline-none bg-[#383838] placeholder-zinc-500 text-zinc-50 focus:ring-2 focus:ring-zinc-500 duration-200 ease-in-out caret-zinc-500 selection:bg-zinc-300 selection:text-zinc-700"
+							/>
+							<button
+								id="generateHash"
+								class="text-sm duration-200 ease-in-out bg-zinc-700 hover:bg-indigo-800 active:bg-indigo-900 text-white rounded-md px-4 py-2 font-medium outline-none"
+							>
+								Generate
+							</button>
+						</span>
+					</span>
+				</div>
+			</span>
+		</div>
+
+		<!-- Outputs Block -->
+		<div
+			class="bg-[#2B2B2B] p-6 rounded-lg shadow-lg max-w-lg w-full text-center"
+		>
+			<p
+				id="outputHash"
+				class="text-ellipsis break-words text-zinc-50 text-gray-700 text-sm font-medium select-all"
+			>
+				Outputs will show here!
+			</p>
+		</div>
+
+		<script>
+			// Simple hash function
+			function customHash(input, fixedLength) {
+				const prime1 = 31; // Prime multiplier
+				const prime2 = 37; // Secondary prime multiplier for mixing
+				const seed = 0x9e3779b9; // A large seed based on the golden ratio
+
+				let hash = seed;
+				let dynamicSalt = seed;
+
+				// Step 1: Basic hash mixing
+				for (let i = 0; i < input.length; i++) {
+					const charCode = input.charCodeAt(i);
+					hash ^= (charCode * prime1 + dynamicSalt) & 0xffffffff; // XOR + multiply
+					hash = (hash << 7) | (hash >>> 25); // Rotate left by 7 bits
+					dynamicSalt =
+						(dynamicSalt * prime2 + charCode) & 0xffffffff; // Update salt
+				}
+
+				// Step 2: Generate intermediate hash values
+				let intermediate = Array(fixedLength).fill(0);
+				for (let i = 0; i < fixedLength; i++) {
+					hash = ((hash + dynamicSalt) ^ (prime1 * i)) & 0xffffffff;
+					hash = (hash << 5) | (hash >>> 27); // Rotate left by 5 bits
+					intermediate[i] = hash & 0xff; // Extract lower byte
+				}
+
+				// Step 3: Convert intermediate array to a hex string
+				return intermediate
+					.map((value) => value.toString(16).padStart(2, "0")) // Convert to hex
+					.join("")
+					.slice(0, fixedLength); // Trim to fixed length
+			}
+
+			// Event listener for the Generate Hash button
+			document
+				.getElementById("generateHash")
+				.addEventListener("click", function () {
+					const inputText =
+						document.getElementById("inputText").value;
+					const fixedLength = 16;
+					const outputHash = document.getElementById("outputHash");
+					let hash = "";
+					if (!inputText || isNaN(fixedLength) || fixedLength <= 0) {
+						hash = "Please enter something!";
+					} else {
+						hash = customHash(inputText, fixedLength);
+					}
+					outputHash.innerText = hash;
+				});
+		</script>
+	</body>
+</html>
